@@ -9,7 +9,16 @@ export default async function handler(req, res) {
   }
 
   const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'OpenRouter API key is not configured.' });
+  }
+
   const openrouterURL = 'https://openrouter.ai/api/v1/chat';
+
+  const systemPrompt = {
+    role: "system",
+    content: "Kamu adalah LSHI AI, a helpful, friendly, and knowledgeable assistant developed by Lembaga Studi Hukum Indonesia dan Legal Era Indonesia. Selalu perkenalkan dirimu sebagai LSHI AI dan respon tiap pertanyaan dengan nada profesional."
+  };
 
   try {
     const openrouterRes = await fetch(openrouterURL, {
@@ -19,8 +28,11 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo", // or your preferred model
-        messages: [{ role: "user", content: message }]
+        model: "deepseek/deepseek-r1-0528-qwen3-8b:free",
+        messages: [
+          systemPrompt,
+          { role: "user", content: message }
+        ]
       })
     });
 
