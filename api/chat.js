@@ -3,8 +3,13 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*'); // For public demo, or set to your domain for security
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+    
+   if (req.method !== 'POST') {
+   return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { message } = req.body;
@@ -16,7 +21,6 @@ export default async function handler(req, res) {
   if (!apiKey) {
     return res.status(500).json({ error: 'OpenRouter API key is not configured.' });
   }
-
   const openrouterURL = 'https://openrouter.ai/api/v1/chat';
 
   const systemPrompt = {
