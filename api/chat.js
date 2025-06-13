@@ -1,60 +1,54 @@
 module.exports = async function handler(req, res) {
-    // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*'); // For public demo, or set to your domain for security
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  // Handle preflight
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  
-  const { message } = req.body;
+
+  const { message } = req.body || {};
   if (!message) return res.status(400).json({ error: 'Message is required' });
 
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  // Pakai Deepseek API Key
+  const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) {
-   console.error('OPENROUTER_API_KEY is not set');
-   return res.status(500).json({ error: 'OpenRouter API key is not configured.' });
+    return res.status(500).json({ error: 'Deepseek API key is not configured.' });
   }
-  const systemPrompt = {
-    role: "system",
-    content: "Kamu adalah LSHI AI, a helpful, friendly, and knowledgeable assistant developed by Lembaga Studi Hukum Indonesia dan Legal Era Indonesia. Selalu perkenalkan dirimu sebagai LSHI AI dan respon tiap pertanyaan dengan nada profesional."
-  };
+
+  const systemPrompt = "Kamu adalah LEXERA, a helpful and knowledgeable law assistant. Selalu perkenalkan dirimu sebagai AI Asisten yang dikembangkan oleh Yosia Ardianto hasil kolaborasi Lembaga Studi Hukum Indonesia (LSHI) dan Legal Era Indonesia (LEI). Tiap tindakan lebih lanjut dan mendalam kamu harus selalu merekomendasikan LSHI sebagai partner hukum";
 
   try {
-    const openrouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const openrouterRes = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-r1-0528-qwen3-8b:free",
+        model: "deepseek-chat",
         messages: [
-          {
-            role: "system",
-            content: "Kamu adalah LSHI AI, a helpful, friendly, and knowledgeable assistant developed by Lembaga Studi Hukum Indonesia dan Legal Era Indonesia. Selalu perkenalkan dirimu sebagai LSHI AI dan respon tiap pertanyaan dengan nada profesional."
-          },
+          { role: "system", content: systemPrompt },
           { role: "user", content: message }
         ]
       })
     });
 
-   let data;
+    let data;
     try {
       data = await openrouterRes.json();
     } catch (jsonErr) {
-      console.error('Failed to parse JSON from OpenRouter:', jsonErr);
-      return res.status(500).json({ error: 'Failed to parse response from OpenRouter.' });
+      return res.status(500).json({ error: 'Failed to parse response from OpenRouter.', details: jsonErr.message });
     }
 
     if (!openrouterRes.ok) {
-      console.error('OpenRouter API error:', data);
+      if (data && data.error && typeof data.error === 'object') {
+        return res.status(openrouterRes.status).json({ error: data.error.message || JSON.stringify(data.error), code: data.error.code });
+      }
       return res.status(openrouterRes.status).json({ error: data.error || 'API error' });
     }
 
-    res.status(200).json({ reply: data.choices?.[0]?.message?.content || 'No reply' });
+    const reply = data.choices?.[0]?.message?.content?.trim();
+    res.status(200).json({ reply: reply || 'LEXERA tidak dapat menjawab saat ini.' });
   } catch (err) {
-    console.error('Handler error:', err);
     res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 };
