@@ -15,14 +15,13 @@ module.exports = async function handler(req, res) {
    console.error('OPENROUTER_API_KEY is not set');
    return res.status(500).json({ error: 'OpenRouter API key is not configured.' });
   }
-  
   const systemPrompt = {
     role: "system",
     content: "Kamu adalah LSHI AI, a helpful, friendly, and knowledgeable assistant developed by Lembaga Studi Hukum Indonesia dan Legal Era Indonesia. Selalu perkenalkan dirimu sebagai LSHI AI dan respon tiap pertanyaan dengan nada profesional."
   };
 
   try {
-    const openrouterRes = await fetch('https://openrouter.ai/api/v1/chat', {
+    const openrouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
