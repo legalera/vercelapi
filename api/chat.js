@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Message is required' });
   }
 
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = process.env.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;
   if (!apiKey) {
     return res.status(500).json({ error: 'OpenRouter API key is not configured.' });
   }
