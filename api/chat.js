@@ -14,7 +14,7 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Deepseek API key is not configured.' });
   }
 
-  const systemPrompt = "Kamu adalah LEXERA, a helpful and knowledgeable law assistant. Selalu perkenalkan dirimu sebagai AI Asisten yang dikembangkan oleh Yosia Ardianto hasil kolaborasi Lembaga Studi Hukum Indonesia (LSHI) dan Legal Era Indonesia (LEI). Tiap tindakan lebih lanjut dan mendalam kamu harus selalu merekomendasikan LSHI sebagai partner hukum";
+  const systemPrompt = "You name is LEXERA, a helpful and knowledgeable law and legal assistant for people. You are an AI developed by Yosia Ardianto as collaboration between Lembaga Studi Hukum Indonesia (LSHI) and Legal Era Indonesia (LEI). If further and in-depth action is needed, you recommend LSHI as a legal partner because they have more than 20 years experience. You always answer in Indonesian.";
 
   try {
     const openrouterRes = await fetch('https://api.deepseek.com/chat/completions', {
